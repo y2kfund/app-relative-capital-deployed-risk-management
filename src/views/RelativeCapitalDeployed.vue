@@ -20,7 +20,7 @@ interface relativeCapitalDeployedProps {
 }
 
 const props = withDefaults(defineProps<relativeCapitalDeployedProps>(), {
-  userId: '67e578fd-2cf7-48a4-b028-a11a3f89bb9b'
+  userId: '4fbec15d-2316-4805-b2a4-5cd2115a5ac8'
 })
 
 // Fetch top 20 positions by capital invested
@@ -108,7 +108,7 @@ const detailRowFormatter = (row: any): string | HTMLElement => {
   const thead = document.createElement('thead')
   thead.innerHTML = `
     <tr style="background: #e9ecef;">
-      <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Account</th>
+      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Account</th>
       <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Asset Category</th>
       <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Symbol</th>
       <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Accounting Quantity</th>
@@ -130,8 +130,8 @@ const detailRowFormatter = (row: any): string | HTMLElement => {
     const row = document.createElement('tr')
     row.style.cssText = index % 2 === 0 ? 'background: #ffffff;' : 'background: #f8f9fa;'
     row.innerHTML = `
-    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e9ecef; color: #6c757d; font-size: 0.875rem;">
-        ${pos.internal_account_id || 'N/A'}
+      <td style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e9ecef; color: #495057; font-size: 0.875rem; font-weight: 500;">
+        ${pos.account_display_name || pos.internal_account_id || 'N/A'}
       </td>
       <td style="padding: 0.75rem; border-bottom: 1px solid #e9ecef;">
         <span style="display: inline-block; padding: 0.25rem 0.5rem; background: ${typeColor}15; color: ${typeColor}; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
