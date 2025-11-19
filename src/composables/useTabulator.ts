@@ -8,10 +8,12 @@ interface UseTabulatorOptions {
   isSuccess: ComputedRef<boolean>
   placeholder?: string
   rowFormatter?: (row: any) => void | Promise<void>
+  dataTree?: boolean
+  dataTreeStartExpanded?: boolean
 }
 
 export function useTabulator(options: UseTabulatorOptions) {
-  const { data, columns, isSuccess, placeholder = 'No data available', rowFormatter } = options
+  const { data, columns, isSuccess, placeholder = 'No data available', rowFormatter, dataTree, dataTreeStartExpanded } = options
   
   const tableDiv = ref<HTMLDivElement | null>(null)
   const isTableInitialized = ref(false)
@@ -42,6 +44,14 @@ export function useTabulator(options: UseTabulatorOptions) {
 
     if (rowFormatter) {
       config.rowFormatter = rowFormatter
+    }
+
+    if (dataTree !== undefined) {
+      config.dataTree = dataTree
+    }
+
+    if (dataTreeStartExpanded !== undefined) {
+      config.dataTreeStartExpanded = dataTreeStartExpanded
     }
 
     tabulator.value = new Tabulator(tableDiv.value, config)

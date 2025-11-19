@@ -6,6 +6,8 @@ interface UseTabulatorOptions {
     isSuccess: ComputedRef<boolean>;
     placeholder?: string;
     rowFormatter?: (row: any) => void | Promise<void>;
+    dataTree?: boolean;
+    dataTreeStartExpanded?: boolean;
 }
 export declare function useTabulator(options: UseTabulatorOptions): {
     tableDiv: Ref<HTMLDivElement | null, HTMLDivElement | null>;

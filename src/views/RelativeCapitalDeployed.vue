@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import type { ColumnDefinition } from 'tabulator-tables'
 import { useTop20PositionsByCapitalQuery, type SymbolPositionGroup } from '@y2kfund/core/relativeCapitalDeployedForRiskManagement'
 import { useTabulator } from '../composables/useTabulator'
@@ -76,8 +76,150 @@ const totalPositionCount = computed(() => {
   return top20Positions.value.reduce((sum: number, pos: SymbolPositionGroup) => sum + pos.positionCount, 0)
 })
 
+// Row expansion formatter for detailed positions
+const detailRowFormatter = (row: any): string | HTMLElement => {
+  const data = row.getData() as SymbolPositionGroup
+  
+  console.log('🔍 [DetailRow] Formatting detail for:', data.symbolRoot, 'with', data.positions?.length, 'positions')
+  console.log('🔍 [DetailRow] Positions data:', data.positions)
+  
+  // Create container
+  const container = document.createElement('div')
+  container.style.cssText = 'padding: 1rem; background: #f8f9fa; border-top: 2px solid #dee2e6;'
+  
+  // Create header
+  const header = document.createElement('div')
+  header.style.cssText = 'margin-bottom: 1rem;'
+  header.innerHTML = `
+    <h4 style="margin: 0 0 0.5rem 0; color: #495057; font-size: 1rem;">
+      ${data.symbolRoot} - Position Details (${data.positionCount} positions)
+    </h4>
+    <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">
+      Showing individual stocks and PUT options that make up the total
+    </p>
+  `
+  container.appendChild(header)
+  
+  // Create table for positions
+  const table = document.createElement('table')
+  table.style.cssText = 'width: 100%; border-collapse: collapse; background: white; border-radius: 4px; overflow: hidden;'
+  
+  // Table header
+  const thead = document.createElement('thead')
+  thead.innerHTML = `
+    <tr style="background: #e9ecef;">
+      <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Account</th>
+      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Asset Category</th>
+      <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Symbol</th>
+      <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Accounting Quantity</th>
+      <th style="padding: 0.75rem; text-align: right; font-weight: 600; color: #495057; border-bottom: 2px solid #dee2e6;">Capital Used</th>
+    </tr>
+  `
+  table.appendChild(thead)
+  
+  // Table body
+  const tbody = document.createElement('tbody')
+  
+  data.positions.forEach((pos: any, index: number) => {
+    const quantity = Math.abs(pos.accounting_quantity ?? pos.qty ?? 0)
+    const positionCapital = data.currentMarketPrice ? quantity * data.currentMarketPrice : 0
+    const isStock = pos.asset_class === 'STK'
+    const typeLabel = isStock ? 'Stock' : 'PUT Option'
+    const typeColor = isStock ? '#28a745' : '#007bff'
+    
+    const row = document.createElement('tr')
+    row.style.cssText = index % 2 === 0 ? 'background: #ffffff;' : 'background: #f8f9fa;'
+    row.innerHTML = `
+    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e9ecef; color: #6c757d; font-size: 0.875rem;">
+        ${pos.internal_account_id || 'N/A'}
+      </td>
+      <td style="padding: 0.75rem; border-bottom: 1px solid #e9ecef;">
+        <span style="display: inline-block; padding: 0.25rem 0.5rem; background: ${typeColor}15; color: ${typeColor}; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+          ${typeLabel}
+        </span>
+      </td>
+      <td style="padding: 0.75rem; border-bottom: 1px solid #e9ecef; font-family: monospace; font-size: 0.875rem; color: #495057;">
+        ${pos.symbol}
+      </td>
+      <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e9ecef; font-weight: 600; color: #495057;">
+        ${formatNumber(quantity)}
+      </td>
+      <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e9ecef; font-weight: 600; color: #28a745;">
+        ${formatCurrency(positionCapital)}
+      </td>
+    `
+    tbody.appendChild(row)
+  })
+  
+  // Add summary row
+  const summaryRow = document.createElement('tr')
+  summaryRow.style.cssText = 'background: #e9ecef; font-weight: 700;'
+  summaryRow.innerHTML = `
+    <td colspan="2" style="padding: 0.75rem; border-top: 2px solid #dee2e6; color: #495057;">
+      TOTAL
+    </td>    
+    <td style="padding: 0.75rem; text-align: right; border-top: 2px solid #dee2e6;"></td>
+    <td style="padding: 0.75rem; text-align: right; border-top: 2px solid #dee2e6; color: #495057;">
+      ${formatNumber(data.totalQuantity)}
+    </td>
+    <td style="padding: 0.75rem; text-align: right; border-top: 2px solid #dee2e6; color: #28a745;">
+      ${formatCurrency(data.capitalInvested)}
+    </td>
+  `
+  tbody.appendChild(summaryRow)
+  
+  table.appendChild(tbody)
+  container.appendChild(table)
+  
+  return container
+}
+
 // Define Tabulator columns
 const columns: ColumnDefinition[] = [
+  {
+    title: '',
+    field: 'expand',
+    width: 50,
+    hozAlign: 'center',
+    headerHozAlign: 'center',
+    headerSort: false,
+    cellClick: (e: any, cell: any) => {
+      console.log('🖱️ [Expand] Cell clicked')
+      const row = cell.getRow()
+      const rowData = row.getData() as SymbolPositionGroup
+      const symbolRoot = rowData.symbolRoot
+      
+      console.log('📊 [Expand] Row data:', rowData)
+      console.log('📊 [Expand] Symbol:', symbolRoot)
+      console.log('📊 [Expand] Positions:', rowData.positions)
+      
+      // Toggle expansion state
+      if (expandedRows.value.has(symbolRoot)) {
+        console.log('⬆️ [Expand] Collapsing row')
+        expandedRows.value.delete(symbolRoot)
+        cell.getElement().innerHTML = '<span style="cursor: pointer; font-size: 1.2rem; color: #007bff;">▶</span>'
+      } else {
+        console.log('⬇️ [Expand] Expanding row')
+        expandedRows.value.add(symbolRoot)
+        cell.getElement().innerHTML = '<span style="cursor: pointer; font-size: 1.2rem; color: #007bff;">▼</span>'
+      }
+      
+      // Force reactivity
+      expandedRows.value = new Set(expandedRows.value)
+      
+      // Reformat the row to show/hide details
+      row.reformat()
+      
+      console.log('✅ [Expand] Toggle complete, expanded rows:', Array.from(expandedRows.value))
+    },
+    formatter: (cell: any) => {
+      const rowData = cell.getRow().getData() as SymbolPositionGroup
+      const symbolRoot = rowData.symbolRoot
+      const isExpanded = expandedRows.value.has(symbolRoot)
+      const arrow = isExpanded ? '▼' : '▶'
+      return `<span style="cursor: pointer; font-size: 1.2rem; color: #007bff;">${arrow}</span>`
+    }
+  },
   {
     title: '#',
     field: 'rank',
@@ -191,12 +333,34 @@ const isSuccess = computed(() => {
   return !isLoading.value && !isError.value && !!top20Positions.value && top20Positions.value.length > 0
 })
 
-// Initialize Tabulator
+// Track expanded rows
+const expandedRows = ref<Set<string>>(new Set())
+
+// Initialize Tabulator with row formatter
 const { tableDiv, initializeTabulator, isTableInitialized, tabulator } = useTabulator({
   data: tableData,
   columns,
   isSuccess,
-  placeholder: 'No position data available'
+  placeholder: 'No position data available',
+  rowFormatter: (row: any) => {
+    const data = row.getData() as SymbolPositionGroup
+    const element = row.getElement()
+    const symbolRoot = data.symbolRoot
+    
+    // Remove existing detail container if any
+    const existingDetail = element.querySelector('.detail-row-container')
+    if (existingDetail) {
+      existingDetail.remove()
+    }
+    
+    // If this row is expanded, add the detail view
+    if (expandedRows.value.has(symbolRoot)) {
+      const detailContainer = document.createElement('div')
+      detailContainer.className = 'detail-row-container'
+      detailContainer.appendChild(detailRowFormatter(row) as HTMLElement)
+      element.appendChild(detailContainer)
+    }
+  }
 })
 
 // Generate colors for pie chart
@@ -346,7 +510,18 @@ onBeforeUnmount(() => {
 
 <style>
 @import 'tabulator-tables/dist/css/tabulator_modern.min.css';
-@import '../styles/styles.css';
+
+/* Detail row container styles - appended inside the row element */
+.detail-row-container {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+  margin-top: 0.5rem;
+}
+
+.row-expanded {
+  background: #e7f3ff !important;
+}
 </style>
 <style scoped>
 @import '../styles/scoped-styles.css';
