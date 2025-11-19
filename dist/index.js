@@ -17758,7 +17758,7 @@ const cu = /* @__PURE__ */ du("pie", gs), uu = { class: "relative-capital-deploy
         formatter: (v) => `<strong style="color:#007bff;font-size:1.05rem">${v.getValue()}</strong>`
       },
       {
-        title: "Total Quantity",
+        title: "Total Accounting Quantity",
         field: "totalQuantity",
         widthGrow: 1.5,
         hozAlign: "right",
@@ -17962,7 +17962,7 @@ const cu = /* @__PURE__ */ du("pie", gs), uu = { class: "relative-capital-deploy
   for (const [i, s] of e)
     t[i] = s;
   return t;
-}, Hu = /* @__PURE__ */ Su(_u, [["__scopeId", "data-v-ed551ac6"]]);
+}, Hu = /* @__PURE__ */ Su(_u, [["__scopeId", "data-v-9c39bd10"]]);
 export {
   Hu as default,
   Hu as relativeCapitalDeployed

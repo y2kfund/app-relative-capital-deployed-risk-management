@@ -100,7 +100,7 @@ const columns: ColumnDefinition[] = [
     }
   },
   {
-    title: 'Total Quantity',
+    title: 'Total Accounting Quantity',
     field: 'totalQuantity',
     widthGrow: 1.5,
     hozAlign: 'right',
