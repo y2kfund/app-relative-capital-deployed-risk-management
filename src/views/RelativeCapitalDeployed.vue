@@ -95,7 +95,7 @@ const detailRowFormatter = (row: any): string | HTMLElement => {
       ${data.symbolRoot} - Position Details (${data.positionCount} positions)
     </h4>
     <p style="margin: 0; color: #6c757d; font-size: 0.875rem;">
-      Showing individual stocks and PUT options that make up the total
+      Showing individual stocks, funds, and PUT options that make up the total
     </p>
   `
   container.appendChild(header)
@@ -123,9 +123,21 @@ const detailRowFormatter = (row: any): string | HTMLElement => {
   data.positions.forEach((pos: any, index: number) => {
     const quantity = Math.abs(pos.accounting_quantity ?? pos.qty ?? 0)
     const positionCapital = data.currentMarketPrice ? quantity * data.currentMarketPrice : 0
-    const isStock = pos.asset_class === 'STK'
-    const typeLabel = isStock ? 'Stock' : 'PUT Option'
-    const typeColor = isStock ? '#28a745' : '#007bff'
+    
+    // Determine type label and color based on asset class
+    let typeLabel = 'Unknown'
+    let typeColor = '#6c757d'
+    
+    if (pos.asset_class === 'STK') {
+      typeLabel = 'Stock'
+      typeColor = '#28a745'
+    } else if (pos.asset_class === 'FUND') {
+      typeLabel = 'Fund'
+      typeColor = '#ffc107'
+    } else if (pos.asset_class === 'OPT') {
+      typeLabel = 'PUT Option'
+      typeColor = '#007bff'
+    }
     
     const row = document.createElement('tr')
     row.style.cssText = index % 2 === 0 ? 'background: #ffffff;' : 'background: #f8f9fa;'
