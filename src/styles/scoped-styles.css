@@ -137,7 +137,7 @@
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  height: 500px;
+  height: 520px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,7 +286,7 @@
 /* Responsive Design */
 @media (max-width: 1200px) {
   .chart-container {
-    height: 400px;
+    height: 520px;
   }
 }
 

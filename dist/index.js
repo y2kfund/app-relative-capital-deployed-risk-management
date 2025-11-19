@@ -17778,11 +17778,16 @@ const cu = /* @__PURE__ */ du("pie", gs), uu = { class: "relative-capital-deploy
         headerHozAlign: "right",
         formatter: (v) => {
           const w = v.getValue();
-          return w == null ? '<span style="color:#6c757d;font-style:italic;">N/A</span>' : l(w);
+          return w == null ? '<span style="color:#6c757d;font-style:italic;">N/A</span>' : new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }).format(w);
         }
       },
       {
-        title: "Capital Invested",
+        title: "Capital Used",
         field: "capitalInvested",
         widthGrow: 1.8,
         hozAlign: "right",
@@ -17809,17 +17814,23 @@ const cu = /* @__PURE__ */ du("pie", gs), uu = { class: "relative-capital-deploy
         },
         bottomCalc: () => 100,
         bottomCalcFormatter: () => '<span style="display:inline-block;padding:0.375rem 0.75rem;background:#e7f3ff;color:#007bff;border-radius:12px;font-weight:600;font-size:0.875rem">100.00%</span>'
-      },
-      {
-        title: "Positions",
-        field: "positionCount",
-        width: 100,
-        hozAlign: "center",
-        headerHozAlign: "center",
-        formatter: (v) => `<span style="color:#6c757d">${v.getValue()}</span>`,
-        bottomCalc: "sum",
-        bottomCalcFormatter: (v) => `<span style="color:#6c757d">${v.getValue()}</span>`
       }
+      /* {
+        title: 'Positions',
+        field: 'positionCount',
+        width: 100,
+        hozAlign: 'center',
+        headerHozAlign: 'center',
+        formatter: (cell: any) => {
+          const value = cell.getValue()
+          return `<span style="color:#6c757d">${value}</span>`
+        },
+        bottomCalc: 'sum',
+        bottomCalcFormatter: (cell: any) => {
+          const value = cell.getValue()
+          return `<span style="color:#6c757d">${value}</span>`
+        }
+      } */
     ], f = lt(() => t.value ? t.value : []), p = lt(() => !i.value && !s.value && !!t.value && t.value.length > 0), { tableDiv: g } = Pl({
       data: f,
       columns: u,
@@ -17903,7 +17914,7 @@ const cu = /* @__PURE__ */ du("pie", gs), uu = { class: "relative-capital-deploy
       var E;
       return dt(), ht("div", uu, [
         w[5] || (w[5] = W("div", { class: "header" }, [
-          W("h2", null, "Top 20 Positions by Capital Invested"),
+          W("h2", null, "Top 20 Positions by Capital Used"),
           W("p", { class: "subtitle" }, "Risk management view showing capital deployment across largest positions")
         ], -1)),
         fe(i) ? (dt(), ht("div", fu, [...w[0] || (w[0] = [
@@ -17914,7 +17925,7 @@ const cu = /* @__PURE__ */ du("pie", gs), uu = { class: "relative-capital-deploy
         ])) : fe(t) && fe(t).length > 0 ? (dt(), ht("div", mu, [
           W("div", bu, [
             W("div", vu, [
-              w[1] || (w[1] = W("div", { class: "stat-label" }, "Total Capital Invested", -1)),
+              w[1] || (w[1] = W("div", { class: "stat-label" }, "Total Capital Used", -1)),
               W("div", wu, ct(l(a.value)), 1)
             ]),
             W("div", yu, [
@@ -17951,7 +17962,7 @@ const cu = /* @__PURE__ */ du("pie", gs), uu = { class: "relative-capital-deploy
   for (const [i, s] of e)
     t[i] = s;
   return t;
-}, Hu = /* @__PURE__ */ Su(_u, [["__scopeId", "data-v-9aac851c"]]);
+}, Hu = /* @__PURE__ */ Su(_u, [["__scopeId", "data-v-ed551ac6"]]);
 export {
   Hu as default,
   Hu as relativeCapitalDeployed

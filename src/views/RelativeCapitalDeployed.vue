@@ -121,11 +121,16 @@ const columns: ColumnDefinition[] = [
     formatter: (cell: any) => {
       const value = cell.getValue()
       if (value == null) return '<span style="color:#6c757d;font-style:italic;">N/A</span>'
-      return formatCurrency(value)
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(value)
     }
   },
   {
-    title: 'Capital Invested',
+    title: 'Capital Used',
     field: 'capitalInvested',
     widthGrow: 1.8,
     hozAlign: 'right',
@@ -157,7 +162,7 @@ const columns: ColumnDefinition[] = [
       return `<span style="display:inline-block;padding:0.375rem 0.75rem;background:#e7f3ff;color:#007bff;border-radius:12px;font-weight:600;font-size:0.875rem">100.00%</span>`
     }
   },
-  {
+  /* {
     title: 'Positions',
     field: 'positionCount',
     width: 100,
@@ -172,7 +177,7 @@ const columns: ColumnDefinition[] = [
       const value = cell.getValue()
       return `<span style="color:#6c757d">${value}</span>`
     }
-  }
+  } */
 ]
 
 // Computed data for Tabulator
@@ -287,7 +292,7 @@ onBeforeUnmount(() => {
   <div class="relative-capital-deployed-risk-management-view">
     <!-- Header -->
     <div class="header">
-      <h2>Top 20 Positions by Capital Invested</h2>
+      <h2>Top 20 Positions by Capital Used</h2>
       <p class="subtitle">Risk management view showing capital deployment across largest positions</p>
     </div>
 
@@ -307,7 +312,7 @@ onBeforeUnmount(() => {
       <!-- Summary Stats -->
       <div class="summary-stats">
         <div class="stat-card">
-          <div class="stat-label">Total Capital Invested</div>
+          <div class="stat-label">Total Capital Used</div>
           <div class="stat-value">{{ formatCurrency(totalCapitalInvested) }}</div>
         </div>
         <div class="stat-card">
