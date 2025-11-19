@@ -3,17 +3,14 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import type { ColumnDefinition } from 'tabulator-tables'
 import { useTop20PositionsByCapitalQuery, type SymbolPositionGroup } from '@y2kfund/core/relativeCapitalDeployedForRiskManagement'
 import { useTabulator } from '../composables/useTabulator'
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  type ChartOptions
-} from 'chart.js'
-import { Pie } from 'vue-chartjs'
+import { use } from 'echarts/core'
+import { TreemapChart } from 'echarts/charts'
+import { CanvasRenderer } from 'echarts/renderers'
+import { TooltipComponent, TitleComponent } from 'echarts/components'
+import VChart from 'vue-echarts'
 
-// Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend)
+// Register ECharts components
+use([TreemapChart, CanvasRenderer, TooltipComponent, TitleComponent])
 
 interface relativeCapitalDeployedProps {
   userId?: string | null
@@ -375,88 +372,105 @@ const { tableDiv, initializeTabulator, isTableInitialized, tabulator } = useTabu
   }
 })
 
-// Generate colors for pie chart
-const generateColors = (count: number): string[] => {
-  const colors = [
-    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384',
-    '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-    '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384', '#36A2EB'
-  ]
-  return colors.slice(0, count)
+// Generate color based on percentage (like stock market heatmap)
+const getColorForPercentage = (percentage: number): string => {
+  // Green for higher percentages, red for lower
+  if (percentage >= 15) return '#1B5E20' // Dark green
+  if (percentage >= 10) return '#2E7D32' // Green
+  if (percentage >= 7) return '#388E3C' // Medium green
+  if (percentage >= 5) return '#4CAF50' // Light green
+  if (percentage >= 3) return '#66BB6A' // Lighter green
+  return '#81C784' // Very light green
 }
 
-// Chart data
-const chartData = computed(() => {
+// ECharts treemap option
+const chartOption = computed(() => {
   if (!top20Positions.value || top20Positions.value.length === 0) {
     return {
-      labels: [],
-      datasets: [{
-        data: [],
-        backgroundColor: []
+      series: [{
+        type: 'treemap',
+        data: []
       }]
     }
   }
 
+  const total = totalCapitalInvested.value
+
   return {
-    labels: top20Positions.value.map(pos => pos.symbolRoot),
-    datasets: [{
-      data: top20Positions.value.map(pos => pos.capitalInvested),
-      backgroundColor: generateColors(top20Positions.value.length),
-      borderWidth: 2,
-      borderColor: '#fff'
+    tooltip: {
+      formatter: (info: any) => {
+        const { name, value, data } = info
+        const percentage = data.percentage
+        return `
+          <div style="padding: 8px;">
+            <strong style="font-size: 16px;">${name}</strong><br/>
+            Capital: <strong>${formatCurrency(value)}</strong><br/>
+            Percentage: <strong>${percentage.toFixed(2)}%</strong>
+          </div>
+        `
+      }
+    },
+    series: [{
+      type: 'treemap',
+      width: '100%',
+      height: '100%',
+      roam: false,
+      nodeClick: false,
+      breadcrumb: {
+        show: false
+      },
+      label: {
+        show: true,
+        formatter: (params: any) => {
+          const { name, data } = params
+          const percentage = data.percentage
+          return `{name|${name}}\n{percent|${percentage.toFixed(2)}%}`
+        },
+        rich: {
+          name: {
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: '#fff',
+            lineHeight: 20
+          },
+          percent: {
+            fontSize: 14,
+            color: '#fff',
+            lineHeight: 18
+          }
+        }
+      },
+      upperLabel: {
+        show: false
+      },
+      itemStyle: {
+        borderColor: '#fff',
+        borderWidth: 2,
+        gapWidth: 2
+      },
+      levels: [
+        {
+          itemStyle: {
+            borderColor: '#fff',
+            borderWidth: 2,
+            gapWidth: 2
+          }
+        }
+      ],
+      data: top20Positions.value.map(pos => {
+        const percentage = (pos.capitalInvested / total) * 100
+        return {
+          name: pos.symbolRoot,
+          value: pos.capitalInvested,
+          percentage: percentage,
+          itemStyle: {
+            color: getColorForPercentage(percentage)
+          }
+        }
+      })
     }]
   }
 })
-
-// Chart options
-const chartOptions: ChartOptions<'pie'> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'right',
-      labels: {
-        font: {
-          size: 12
-        },
-        padding: 10,
-        generateLabels: (chart) => {
-          const data = chart.data
-          if (data.labels && data.datasets.length) {
-            return data.labels.map((label, i) => {
-              const dataset = data.datasets[0]
-              const value = dataset.data[i] as number
-              const total = (dataset.data as number[]).reduce((sum, val) => sum + val, 0)
-              const percentage = ((value / total) * 100).toFixed(1)
-              
-              return {
-                text: `${label}: ${percentage}%`,
-                fillStyle: (dataset.backgroundColor as string[])[i],
-                hidden: false,
-                index: i,
-                strokeStyle: '#fff',
-                lineWidth: 2
-              }
-            })
-          }
-          return []
-        }
-      }
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          const label = context.label || ''
-          const value = context.parsed || 0
-          const total = context.dataset.data.reduce((sum: number, val) => sum + (val as number), 0)
-          const percentage = ((value / total) * 100).toFixed(2)
-          return `${label}: ${formatCurrency(value)} (${percentage}%)`
-        }
-      }
-    }
-  }
-}
 
 // Cleanup on unmount
 onBeforeUnmount(() => {
@@ -502,9 +516,9 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Pie Chart -->
+      <!-- Treemap Heatmap -->
       <div class="chart-container">
-        <Pie :data="chartData" :options="chartOptions" />
+        <v-chart :option="chartOption" autoresize />
       </div>
 
       <!-- Positions Table -->
