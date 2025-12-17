@@ -29,6 +29,42 @@ const totalCapitalInvested = computed(() => {
   return top20Positions.value.reduce((sum, pos) => sum + pos.capitalInvested, 0)
 })
 
+// Calculate total capital invested in stocks only
+const totalCapitalInvestedStk = computed(() => {
+  if (!top20Positions.value) return 0
+  return top20Positions.value.reduce((sum, pos) => {
+    return sum + calculateStkCapital(pos)
+  }, 0)
+})
+
+// Calculate total capital invested in puts only
+const totalCapitalInvestedPut = computed(() => {
+  if (!top20Positions.value) return 0
+  return top20Positions.value.reduce((sum, pos) => {
+    return sum + calculatePutCapital(pos)
+  }, 0)
+})
+
+// Helper function to calculate stock capital for a position
+const calculateStkCapital = (position: SymbolPositionGroup): number => {
+  return position.positions
+    .filter((p: any) => p.asset_class === 'STK' || p.asset_class === 'FUND')
+    .reduce((acc: number, p: any) => {
+      const quantity = Math.abs(p.accounting_quantity ?? p.qty ?? 0)
+      return acc + (quantity * (position.currentMarketPrice ?? 0))
+    }, 0)
+}
+
+// Helper function to calculate put capital for a position
+const calculatePutCapital = (position: SymbolPositionGroup): number => {
+  return position.positions
+    .filter((p: any) => p.asset_class === 'OPT')
+    .reduce((acc: number, p: any) => {
+      const quantity = Math.abs(p.accounting_quantity ?? p.qty ?? 0)
+      return acc + (quantity * (position.currentMarketPrice ?? 0))
+    }, 0)
+}
+
 // Format currency
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
@@ -65,6 +101,13 @@ const formatNumberForTable = (cell: any): string => {
   const value = cell.getValue()
   if (value == null) return ''
   return formatNumber(value)
+}
+
+// Calculate percentage for Tabulator
+const formatPercentageForTable = (cell: any): string => {
+  const value = cell.getValue()
+  if (value == null) return ''
+  return `${value.toFixed(2)}%`
 }
 
 // Calculate bottom totals
@@ -281,20 +324,37 @@ const columns: ColumnDefinition[] = [
     }
   },
   {
-    title: 'Capital Used',
-    field: 'capitalInvested',
+    title: 'Capital Used (STK)',
+    field: 'capitalStkOnly',
     widthGrow: 1.8,
     hozAlign: 'right',
     headerHozAlign: 'right',
     formatter: (cell: any) => {
-      const value = cell.getValue()
-      if (value == null) return ''
-      return `<strong style="color:#28a745;font-size:1.05rem">${formatCurrency(value)}</strong>`
+      const row = cell.getRow().getData() as SymbolPositionGroup
+      const stkCapital = calculateStkCapital(row)
+      return `<strong style="color:#28a745;font-size:1.05rem">${formatCurrency(stkCapital)}</strong>`
     },
-    bottomCalc: 'sum',
+    bottomCalc: () => totalCapitalInvestedStk.value,
     bottomCalcFormatter: (cell: any) => {
       const value = cell.getValue()
       return `<strong style="color:#28a745;font-size:1.05rem">${formatCurrency(value)}</strong>`
+    }
+  },
+  {
+    title: 'Capital Used (PUT)',
+    field: 'capitalPutOnly',
+    widthGrow: 1.8,
+    hozAlign: 'right',
+    headerHozAlign: 'right',
+    formatter: (cell: any) => {
+      const row = cell.getRow().getData() as SymbolPositionGroup
+      const putCapital = calculatePutCapital(row)
+      return `<strong style="color:#007bff;font-size:1.05rem">${formatCurrency(putCapital)}</strong>`
+    },
+    bottomCalc: () => totalCapitalInvestedPut.value,
+    bottomCalcFormatter: (cell: any) => {
+      const value = cell.getValue()
+      return `<strong style="color:#007bff;font-size:1.05rem">${formatCurrency(value)}</strong>`
     }
   },
   {
