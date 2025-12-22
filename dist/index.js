@@ -29273,7 +29273,7 @@ const _D = { class: "relative-capital-deployed-risk-management-view" }, ED = {
         formatter: (T) => `<strong style="color:#007bff;font-size:1.05rem">${T.getValue()}</strong>`
       },
       {
-        title: "Total Accounting Quantity",
+        title: "Total accounting quantity",
         field: "totalQuantity",
         widthGrow: 1.5,
         hozAlign: "right",
@@ -29286,7 +29286,7 @@ const _D = { class: "relative-capital-deployed-risk-management-view" }, ED = {
         }
       },
       {
-        title: "Market Price",
+        title: "Market price",
         field: "currentMarketPrice",
         widthGrow: 1.3,
         hozAlign: "right",
@@ -29302,7 +29302,7 @@ const _D = { class: "relative-capital-deployed-risk-management-view" }, ED = {
         }
       },
       {
-        title: "Capital Used (STK)",
+        title: "Capital used (STK)",
         field: "capitalStkOnly",
         widthGrow: 1.8,
         hozAlign: "right",
@@ -29318,7 +29318,7 @@ const _D = { class: "relative-capital-deployed-risk-management-view" }, ED = {
         }
       },
       {
-        title: "Capital Used (PUT)",
+        title: "Capital maybe used (PUT Sold)",
         field: "capitalPutOnly",
         widthGrow: 1.8,
         hozAlign: "right",
@@ -29334,7 +29334,7 @@ const _D = { class: "relative-capital-deployed-risk-management-view" }, ED = {
         }
       },
       {
-        title: "% of Total",
+        title: "% of total",
         field: "percentage",
         widthGrow: 1.3,
         hozAlign: "center",
@@ -29511,7 +29511,7 @@ const _D = { class: "relative-capital-deployed-risk-management-view" }, ED = {
   for (const [i, n] of e)
     t[i] = n;
   return t;
-}, UD = /* @__PURE__ */ ND(HD, [["__scopeId", "data-v-614acbe0"]]);
+}, UD = /* @__PURE__ */ ND(HD, [["__scopeId", "data-v-23e239f6"]]);
 export {
   UD as default,
   UD as relativeCapitalDeployed

@@ -294,7 +294,7 @@ const columns: ColumnDefinition[] = [
     }
   },
   {
-    title: 'Total Accounting Quantity',
+    title: 'Total accounting quantity',
     field: 'totalQuantity',
     widthGrow: 1.5,
     hozAlign: 'right',
@@ -307,7 +307,7 @@ const columns: ColumnDefinition[] = [
     }
   },
   {
-    title: 'Market Price',
+    title: 'Market price',
     field: 'currentMarketPrice',
     widthGrow: 1.3,
     hozAlign: 'right',
@@ -324,7 +324,7 @@ const columns: ColumnDefinition[] = [
     }
   },
   {
-    title: 'Capital Used (STK)',
+    title: 'Capital used (STK)',
     field: 'capitalStkOnly',
     widthGrow: 1.8,
     hozAlign: 'right',
@@ -341,7 +341,7 @@ const columns: ColumnDefinition[] = [
     }
   },
   {
-    title: 'Capital Used (PUT)',
+    title: 'Capital maybe used (PUT Sold)',
     field: 'capitalPutOnly',
     widthGrow: 1.8,
     hozAlign: 'right',
@@ -358,7 +358,7 @@ const columns: ColumnDefinition[] = [
     }
   },
   {
-    title: '% of Total',
+    title: '% of total',
     field: 'percentage',
     widthGrow: 1.3,
     hozAlign: 'center',
